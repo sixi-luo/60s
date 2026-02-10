@@ -1,0 +1,42 @@
+name: Daily News Push
+
+on:
+  schedule:
+    # 每天北京时间上午10:30运行（UTC时间2:30）
+    - cron: '30 2 * * *'
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  send-news:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 发送每日新闻到企业微信
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      run: |
+        # 获取新闻内容
+        NEWS=$(curl -s "https://60s.viki.moe/v2/60s?encoding=text")
+        
+        # 获取当前日期
+        DATE=$(date +"%Y年%m月%d日")
+        
+        # 构建发送消息的格式
+        JSON_DATA=$(cat <<EOF
+        {
+          "msgtype": "markdown",
+          "markdown": {
+            "content": "## 🌍 每日60秒新闻快报 ($DATE)\n\n$NEWS\n\n---\n📅 更新时间：$(date +"%H:%M")\n🔗 数据源：60s API"
+          }
+        }
+        EOF
+        )
+        
+        # 发送到企业微信
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -d "$JSON_DATA" \
+          "$WEBHOOK_URL"
+        
+        echo "✅ 新闻已发送到企业微信"
