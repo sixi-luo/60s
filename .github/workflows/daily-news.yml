@@ -3,7 +3,7 @@ name: Daily News Push
 on:
   schedule:
     # 每天北京时间上午10:30运行（UTC时间2:30）
-    - cron: '30 2 * * *'
+    - cron: '0 0 * * *'
   # 允许手动触发
   workflow_dispatch:
 
